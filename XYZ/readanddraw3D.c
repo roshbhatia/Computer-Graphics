@@ -12,19 +12,38 @@ typedef
 }
 THING;
 
+//Total number of objects
 int numobjects;
+//Total number of points for each object
 int numpoints[10];
+//Total number of polygons for each object
 int numpolys[10];
-int psize[10][2000];
-double x[10][10000], y[10][10000],z[10][10000], red[10][10000], grn[10][10000], blu[10][10000], xnewarray[10][10000], ynewarray[10][10000], znewarray [10][10000];
+//X, Y, and Z coordinates
+double x[10][10000], y[10][10000],z[10][10000];
+//Red, green, and blue arrays for each polygon
+double red[10][10000], grn[10][10000], blu[10][10000];
+//Average of all points, used to center/translate object
 double xaverage [10],yaverage[10],zaverage[10];
+//Polygon size
+int psize[10][2000];
+//points that make up polygon
 int con[10][10000][20];
+//Width and heigh of canvas
 double swidth, sheight;
+
+//Needed for translating Z Coordinates onto x and y plane
 double xbar[10][10000];
 double ybar[10][10000];
+
+//Needed for Painter's Algorithm
 THING allpolys[100000];
 int allpolyslength;
 int totalpolys;
+
+//Needed for Light model
+double ambient;
+double MaxDiffuse;
+
 
 void print_array()
 {
@@ -48,8 +67,8 @@ int compare (const void *p, const void *q)
         a = (THING*)p;
         b = (THING*)q;
 
-        if  (((*a).dist) < ((*b).dist)) return -1;
-        else if (((*a).dist) > ((*b).dist)) return 1;
+        if  (((*a).dist) < ((*b).dist)) return 1;
+        else if (((*a).dist) > ((*b).dist)) return -1;
         else return 0;
 }
 
@@ -57,13 +76,14 @@ int compare (const void *p, const void *q)
 void init_array()
 {
         int i,j,l;
-        allpolyslength=0;
+        allpolyslength = 0;
         for (i = 0; i < numobjects; i++) {
                 for (j = 0; j < numpolys[i]; j++) {
 
                         allpolys[allpolyslength].objnum = i;
                         allpolys[allpolyslength].polynum = j;
                         allpolys[allpolyslength].dist = z[i][con[i][j][0]];
+                        //printf ("\n%lf", allpolys[allpolyslength].dist);
                         allpolyslength++;
 
                 }
@@ -120,61 +140,91 @@ void makeWireFrame(int onum){
         int k = 0;
 
         for(i = 0; i < numpolys[onum]; i++) {
-                for(j = 0; j < psize[onum][i]; j++) {
+                for(j = 0; j < numpoints[onum]; j++) {
                         a = con[onum][i][j];
-                        xbar[onum][j] = ((300/tan(1.047)*(x[onum][a]/z[onum][a])) + 300);
-                        ybar[onum][j] = ((300/tan(1.047)*(y[onum][a]/z[onum][a])) + 300);
+                        xbar[onum][j] = ((300/tan(40 * M_PI/180)*(x[onum][j]/z[onum][j])) + 300);
+                        ybar[onum][j] = ((300/tan(40 * M_PI/180)*(y[onum][j]/z[onum][j])) + 300);
                 }
         }
 
 }
 
-void drawObject(int onum){
+void drawObject(){
         int i;
         int j;
         j = 0;
-	int k = 0;
+        int k = 0;
 
-  
-        makeWireFrame(onum);
+        for (k = 0; k < numobjects; k++) {
+                makeWireFrame(k);
+        }
         init_array();
         qsort (allpolys, allpolyslength, sizeof(THING),compare);
 
 
 
-        //print_array();
+        for(i = 0; i < allpolyslength; i++) {
 
-        for(i = 0; i < numpolys[onum]; i++) {
-	     int size = psize[onum][i];
-	     double tempx [size];
-	     double tempy [size];
-      
+
+                int size = psize[allpolys[i].objnum][allpolys[i].polynum];
+                //printf("size = %d\n", size);
+                double tempx [size];
+                double tempy [size];
+
                 for(j = 0; j < size; j++) {
-		       int current = con[allpolys[i].objnum][allpolys[i].polynum][j];
-                       tempx[j] =  xbar[allpolys[i].objnum][current];
-		       tempy[j] = ybar[allpolys[i].objnum][current];
-		       k++;
+                        int current = con[allpolys[i].objnum][allpolys[i].polynum][j];
+                        //printf("current = %d\n", current);
+                        tempx[j] =  xbar[allpolys[i].objnum][current];
+                        tempy[j] = ybar[allpolys[i].objnum][current];
                 }
-
-	        /* printf ("\n"); */
-		/* for (j = 0; j < size; j++){ */
-		/*   printf ("\n%lf", tempx[j]); */
-		/*   printf ("\n%lf", tempy[j]); */
-		/*  } */
+                /* printf ("\n");
+                   for (j = 0; j < size; j++) {
+                        printf ("\nx = %lf y = %lf ", tempx[j], tempy[j]);
+                   } */
 
                 //Filled shapes are red
-                G_rgb(1,0,0);
+                if (allpolys[i].objnum == 0) {
+                        G_rgb(1,0,0);
+                }
+                else if (allpolys[i].objnum == 1) {
+                        G_rgb(0,1,0);
+                }
+                else if (allpolys[i].objnum == 2) {
+                        G_rgb(0,0,1);
+                }
+                else if (allpolys[i].objnum == 3) {
+                        G_rgb(1,1,0);
+                }
+                else if (allpolys[i].objnum == 4) {
+                        G_rgb(0,1,1);
+                }
+                else if (allpolys[i].objnum == 5) {
+                        G_rgb(1,0,1);
+                }
+                else if (allpolys[i].objnum == 6) {
+                        G_rgb(1,1,1);
+                }
+                else if (allpolys[i].objnum == 7) {
+                        G_rgb(.5,.5,1);
+                }
+                else if (allpolys[i].objnum == 8) {
+                        G_rgb(.2,.7,.9);
+                }
+                else  {
+                        G_rgb(.3,.1,.1);
+                }
                 G_fill_polygon(tempx,tempy,size);
                 //Outline is black
                 G_rgb(0,0,0);
                 G_polygon(tempx,tempy,size);
         }
+
 }
 
 
 
 
-void drawObjectWireFrame(int onum){
+void drawObjectWireFrame(){
         G_rgb(0,1,0);
         int i;
         int j, a;
@@ -182,15 +232,39 @@ void drawObjectWireFrame(int onum){
         int k = 0;
         init_array();
 
-        for(i = 0; i < numpolys[onum]; i++) {
-                for(j = 0; j < psize[onum][i]; j++) {
-                        a = con[onum][i][j];
-                        xbar[onum][j] = ((300/tan(1.047)*(x[onum][a]/z[onum][a])) + 300);
-                        ybar[onum][j] = ((300/tan(1.047)*(y[onum][a]/z[onum][a])) + 300);
-                }
+        for (k = 0; k <= numobjects; k++) {
+                for(i = 0; i < numpolys[k]; i++) {
+                        for(j = 0; j < psize[k][i]; j++) {
+                                a = con[k][i][j];
+                                xbar[k][j] = ((300/tan(40 * M_PI/180)*(x[k][a]/z[k][a])) + 300);
+                                ybar[k][j] = ((300/tan(40 * M_PI/180)*(y[k][a]/z[k][a])) + 300);
+                        }
 
-                G_polygon(xbar[onum],ybar[onum],psize[onum][i]);
+                        G_polygon(xbar[k],ybar[k],psize[k][i]);
+                }
         }
+}
+
+double findhigh(int onum, double vals[10][10000]){
+        double high = vals[onum][0];
+        int i;
+        for (i = 0; i < numpoints[onum]; i++) {
+                if (vals[onum][i] > high) {
+                        high = vals[onum][i];
+                }
+        }
+        return high;
+}
+
+double findlow(int onum, double vals[10][10000]){
+        double low = vals[onum][0];
+        int i;
+        for (i = 0; i < numpoints[onum]; i++) {
+                if (vals[onum][i] < low) {
+                        low = vals[onum][i];
+                }
+        }
+        return low;
 }
 
 int main(int argc, char *argv[])
@@ -218,7 +292,35 @@ int main(int argc, char *argv[])
                 D3d_make_identity(temp);
                 D3d_make_identity(temp2);
                 averagepoint(onum);
-                D3d_translate(temp,temp2,xaverage[onum],yaverage[onum],zaverage[onum] + 2.4);
+                D3d_translate(temp,temp2,-xaverage[onum],-yaverage[onum],-zaverage[onum]);
+                //Scalefactor
+                double sf = 0;
+                double xhigh = findhigh(onum, x);
+                double xlow = findlow(onum, x);
+                double yhigh = findhigh(onum, y);
+                double ylow = findlow(onum, y);
+                double zhigh = findhigh(onum, z);
+                double zlow = findlow(onum, z);
+
+                double xdifference = xhigh - xlow;
+                double ydifference = yhigh - ylow;
+                double zdifference = zhigh - zlow;
+
+                if ((xdifference > ydifference) && (xdifference > zdifference)) {
+
+                        sf = xdifference;
+                }
+                else if ((ydifference > xdifference) && (ydifference > zdifference)) {
+                        sf = ydifference;
+                }
+                else {
+                        sf = zdifference;
+                }
+
+
+
+                D3d_scale(temp, temp2, 1/sf, 1/sf, 1/sf);
+                D3d_translate(temp,temp2, 0, 0, 1);
                 D3d_mat_mult_points(x[onum], y[onum],z[onum], temp, x[onum], y[onum],z[onum], numpoints[onum]);
         }
 
@@ -231,7 +333,7 @@ int main(int argc, char *argv[])
         G_init_graphics(600, 600);
         G_rgb(0,0,0);
         G_fill_rectangle(0,0,600,600);
-        drawObject(onum);
+        drawObject();
 
         int key;
         int wireframeTrue = 0;
@@ -373,16 +475,12 @@ int main(int argc, char *argv[])
                 }
 
                 if (wireframeTrue == 1) {
-                        for (i = 0; i <= numofobjects; i++) {
-                                drawObjectWireFrame(i);
-                        }
+                        drawObjectWireFrame();
+
                 }
                 else{
-                        for (i = 0; i <= numofobjects; i++) {
-                                drawObject(i);
-                        }
+                        drawObject();
                 }
         }
-
         G_close();
 }

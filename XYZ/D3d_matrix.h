@@ -1,7 +1,7 @@
 
 
-#ifndef D2d_matrix_stuff
-#define D2d_matrix_stuff
+#ifndef D3d_matrix_stuff
+#define D3d_matrix_stuff
 
 #include <stdio.h>
 #include <math.h>

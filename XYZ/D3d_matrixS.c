@@ -46,7 +46,7 @@ int D3d_mat_mult(double res[4][4], double a[4][4], double b[4][4]){
   for (i = 0; i < 4; i ++) {
     for (j = 0; j < 4; j ++) {
       total = 0;
-      for (k = 0; k < 4; k ++) {		
+      for (k = 0; k < 4; k ++) {
       	total += a[j][k] * b[k][i];
       }
       temp[j][i] = total;
@@ -269,7 +269,7 @@ int D3d_negate_x(double a[4][4], double b[4][4]){
   temp[1][1] = 1;
   temp[2][2] = 1;
   temp[3][3] = 1;
-  
+
 
   D3d_mat_mult(a,temp,a);
 
@@ -319,7 +319,7 @@ int D3d_negate_z(double a[4][4], double b[4][4]){
 
 
 int D3d_mat_mult_points(double *X, double *Y, double *Z, double m[4][4], double *x, double *y, double *z, int numpoints){
-  int i, j, k; 
+  int i, j, k;
 
   double t1, t2;
 
@@ -331,7 +331,7 @@ int D3d_mat_mult_points(double *X, double *Y, double *Z, double m[4][4], double 
    Z[i] = m[2][0] * x[i] + m[2][1] * y[i]+ m[2][2] * z[i] + m[2][3];
    X[i] = t1;
    Y[i] = t2;
-  
+
   }
   return 1;
 }
